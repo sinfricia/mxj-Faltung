@@ -3,44 +3,90 @@ import com.cycling74.msp.*;
 
 public class Faltung extends MSPPerformer
 {
-    private static final String[] INLET_ASSIST = new String[]{
-            "input (sig)"
-    };
-    private static final String[] OUTLET_ASSIST = new String[]{
-            "output (sig)"
-    };
+	private AudioFileBuffer IR;
+	private boolean IRLoaded = false;
+	private String IRPath;
+	private int pointerIn, pointerOut, IRLength, inBufferLength, postCounter;
+	private float[] inBuffer;
 
 
-    public Faltung()
-    {
-        declareInlets(new int[]{SIGNAL});
-        declareOutlets(new int[]{SIGNAL});
+	private static final String[] INLET_ASSIST = new String[]{
+		"input (sig)"
+	};
+	private static final String[] OUTLET_ASSIST = new String[]{
+		"output (sig)"
+	};
 
-        setInletAssist(INLET_ASSIST);
-        setOutletAssist(OUTLET_ASSIST);
-    }
 
-    public void inlet(float f)
-    {
+	public Faltung()
+	{
+		declareInlets(new int[]{SIGNAL});
+		declareOutlets(new int[]{SIGNAL});
 
-    }
+		setInletAssist(INLET_ASSIST);
+		setOutletAssist(OUTLET_ASSIST);
+	}
 
-    public void dspsetup(MSPSignal[] ins, MSPSignal[] outs)
-    {
-        //If you forget the fields of MSPSignal you can select the classname above
-        //and choose Open Class Reference For Selected Class.. from the Java menu
-    }
 
-    public void perform(MSPSignal[] ins, MSPSignal[] outs)
-    {
+	public void loadIR(String fileName)
+	{
+		IRPath = MaxSystem.openDialog();
+		try {
+			IR = new AudioFileBuffer(IRPath);
+			post("IR length: " + IR.getFrameLength() + " samples/" + IR.getLengthMs() + "ms");
+		}
+		catch(Exception e) {
+			error("mxj Faltung: Sorry, file was not found");
+			return;
+		}
 
-        int i;
-        float[] in = ins[0].vec;
-        float[] out = outs[0].vec;
-        for(i = 0; i < in.length;i++)
-        {
-            out[i] = in[i];
+		IRLength = (int)IR.getFrameLength();
+		inBufferLength = IRLength + 1;
+		inBuffer = new float[inBufferLength];
+		IRLoaded = true;
+		post("IR loaded");
+	}
 
-        }
-    }
+	public void unloadIR()
+	{
+		IR = null;
+		IRLoaded = false;
+		post("IR unloaded");
+	}
+
+	public void convolution(float[] in, float[] out, int i)
+	{
+
+	}
+
+	public void perform(MSPSignal[] ins, MSPSignal[] outs)
+	{
+		float[] in = ins[0].vec;
+		float[] out = outs[0].vec;
+		for(int i = 0; i < in.length;i++)
+		{
+			if(IRLoaded)
+			{
+				inBuffer[pointerIn] = in[i];
+				pointerIn++;
+				if(pointerIn >= inBufferLength) pointerIn -= inBufferLength;
+
+				for(int j = 0; j < IRLength; j++)
+				{
+					if (postCounter > 1) {
+					post("j" + j);
+					post("IRLength: " + IRLength);
+					postCounter = 0;
+					}
+					postCounter++;
+
+					pointerOut = i - j;
+					if(pointerOut < 0) pointerOut += inBufferLength;
+					out[i] += IR.buf[0][j]*inBuffer[pointerOut];
+				}
+			}
+			else out[i] = in[i];
+		}
+	}
 }
+
