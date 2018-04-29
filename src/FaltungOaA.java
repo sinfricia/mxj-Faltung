@@ -23,9 +23,9 @@ import com.cycling74.msp.*;
 
 public class FaltungOaA extends MSPPerformer
 {
-    private int sampleRate;
+    private int sampleRate, vectorSize;
     private boolean IRLoaded = false;
-    private float IRLengthMs, vectorSize;
+    private float IRLengthMs;
     private int IRLength, pointerIn = 0, inBufferLength, outBufferLength,
             IRLoadingCounter = 0, outBufferEndPaddingStart, whichBuffer;
     private float[] IR, inBuffer, outSignal;
@@ -94,13 +94,13 @@ public class FaltungOaA extends MSPPerformer
         if(IRLength % 2 == 0)
             IRLength -= 1;									//For the overlap-and-add method to work reliably the IR needs to have an uneven samplecount
         IR = new float[IRLength];
-        inBufferLength = (int)vectorSize + 2*IRLength - 2;
-        outBufferLength = (int)vectorSize+IRLength-1;
+        inBufferLength = vectorSize + 2*IRLength - 2;
+        outBufferLength = vectorSize+IRLength-1;
         inBuffer = new float[inBufferLength];				//Initializing all the buffer sizes based on the IRLength and the input vector size
         outBuffer = new float[2][outBufferLength];
-        outSignal = new float[outBufferLength];
+        outSignal = new float[outBufferLength - (IRLength -1)];
 
-        outBufferEndPaddingStart = outBufferLength - (IRLength - 3);	//this is the point in the output buffer, where we need to wait for the next buffer to add its signal
+        outBufferEndPaddingStart = vectorSize;	//this is the point in the output buffer, where we need to wait for the next buffer to add its signal
 
         for(int i = 0; i < IRLength; i++)				// this sends the sample indicies to the buffer~ object, so it start sending the IR sample values
         {
