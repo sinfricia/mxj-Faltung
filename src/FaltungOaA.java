@@ -34,7 +34,7 @@ public class FaltungOaA extends MSPPerformer
 
     private static final String[] INLET_ASSIST = new String[]{
             "input (sig)", "impulseResponseLength in ms", "IR sample values"
-    };k
+    };
     private static final String[] OUTLET_ASSIST = new String[]{
             "output (sig)", "IR sample Index"
     };
