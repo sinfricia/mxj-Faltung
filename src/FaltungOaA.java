@@ -100,7 +100,7 @@ public class FaltungOaA extends MSPPerformer
         outBuffer = new float[2][outBufferLength];
         outSignal = new float[outBufferLength];
 
-        outBufferEndPaddingStart = outBufferLength - IRLength - 3;	//this is the point in the output buffer, where we need to wait for the next buffer to add its signal
+        outBufferEndPaddingStart = outBufferLength - (IRLength - 3);	//this is the point in the output buffer, where we need to wait for the next buffer to add its signal
 
         for(int i = 0; i < IRLength; i++)				// this sends the sample indicies to the buffer~ object, so it start sending the IR sample values
         {

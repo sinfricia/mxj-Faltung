@@ -6,7 +6,7 @@ public class Faltung extends MSPPerformer
 	private AudioFileBuffer IR;
 	private boolean IRLoaded = false;
 	private String IRPath;
-	private int pointerIn, pointerOut, IRLength, inBufferLength, postCounter;
+	private int pointerIn, pointerOut, IRLength, inBufferLength;
 	private float[] inBuffer;
 
 
@@ -26,7 +26,6 @@ public class Faltung extends MSPPerformer
 		setInletAssist(INLET_ASSIST);
 		setOutletAssist(OUTLET_ASSIST);
 	}
-
 
 	public void loadIR(String fileName)
 	{
@@ -54,11 +53,6 @@ public class Faltung extends MSPPerformer
 		post("IR unloaded");
 	}
 
-	public void convolution(float[] in, float[] out, int i)
-	{
-
-	}
-
 	public void perform(MSPSignal[] ins, MSPSignal[] outs)
 	{
 		float[] in = ins[0].vec;
@@ -71,15 +65,9 @@ public class Faltung extends MSPPerformer
 				pointerIn++;
 				if(pointerIn >= inBufferLength) pointerIn -= inBufferLength;
 
+				out[i] = 0;
 				for(int j = 0; j < IRLength; j++)
 				{
-					if (postCounter > 1) {
-					post("j" + j);
-					post("IRLength: " + IRLength);
-					postCounter = 0;
-					}
-					postCounter++;
-
 					pointerOut = i - j;
 					if(pointerOut < 0) pointerOut += inBufferLength;
 					out[i] += IR.buf[0][j]*inBuffer[pointerOut];
